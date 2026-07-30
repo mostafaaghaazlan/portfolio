@@ -1,0 +1,16 @@
+<!-- Monogram favicon. A wordmark set in the site's own display weight, on the
+     site's own ink, with the accent as the rule. No illustration. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" fill="#050505" />
+  <text
+    x="32"
+    y="40"
+    text-anchor="middle"
+    font-family="Geist, ui-sans-serif, system-ui, sans-serif"
+    font-size="30"
+    font-weight="600"
+    letter-spacing="-1.6"
+    fill="#f5f5f7"
+  >MG</text>
+  <rect x="14" y="48" width="36" height="2" fill="#7c5cff" />
+</svg>

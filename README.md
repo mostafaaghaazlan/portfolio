@@ -21,8 +21,10 @@ splitting, and Three.js for the background field.
 | `app/assets/css/main.css` | Design tokens, reveal gating, shared component styles |
 | `app/composables/useMotion.ts` | `useScene`, split helpers, reduced-motion gate |
 | `app/composables/useSmoothScroll.ts` | Lenis, wired to the GSAP ticker |
+| `scripts/build-docs.mjs` | `npm run deploy`: builds and stages the site into `docs/` |
 | `scripts/optimize-assets.mjs` | Generates the shipped `.webp` from the source PNGs |
 | `scripts/trim-prefetch.mjs` | Drops prefetch hints for oversized chunks |
+| `docs/` | The published site. Generated, do not edit by hand |
 | `public/img/logos/` | Project logos, taken from each project's own repo |
 | `public/img/icons/` | Simple Icons SVGs, drawn as CSS masks |
 
@@ -73,13 +75,33 @@ npm run preview
 
 ## Deploy
 
-`.github/workflows/deploy.yml` runs `npm run generate` on every push to `main` and
-publishes `.output/public` to GitHub Pages. Enable it once under
-**Settings > Pages > Source > GitHub Actions**.
+GitHub Pages serves this in **Deploy from a branch** mode, set to **`main` / `docs`**.
+There is no CI workflow: GitHub Actions is not available on this account, so the built
+site is committed rather than built on push.
 
-The workflow derives `app.baseURL` from the repository name, so it works unchanged
-whether this is a user site (`<user>.github.io`, served from `/`) or a project site
-(served from `/<repo>/`). To build locally against a project path:
+```sh
+npm run deploy      # builds and stages the site into docs/
+git add docs && git commit -m "Deploy" && git push
+```
+
+`npm run deploy` (`scripts/build-docs.mjs`) is the whole deploy step. It does three
+things by hand that CI used to do, and each one breaks the site silently if skipped:
+
+1. **Derives `BASE_PATH` from the git remote.** The repo is not named
+   `<user>.github.io`, so the site is served from `/<repo>/` and every asset and route
+   URL needs that prefix. Renaming the repository to `<user>.github.io` switches it to
+   `/` automatically.
+2. **Fails the build if `.nojekyll` is missing.** A branch deploy runs through Jekyll,
+   which ignores directories starting with an underscore, so without that file the
+   whole `_nuxt` directory 404s and the site loads as unstyled HTML.
+3. **Repoints the "Back home" link in `404.html` and `200.html`.**
+   `app/spa-loading-template.html` is plain HTML with no access to `app.baseURL`, so it
+   ships pointing at `/`, which would send someone from a 404 to the domain root.
+
+`docs/` is replaced wholesale each run, so a file dropped from the site does not
+linger in the published output.
+
+To build against a different base without deploying:
 
 ```sh
 # PowerShell
@@ -89,6 +111,13 @@ $env:BASE_PATH = '/portfolio/'; npm run generate
 # so disable that conversion or the base comes out as /Program Files/Git/portfolio/
 MSYS_NO_PATHCONV=1 BASE_PATH=/portfolio/ npm run generate
 ```
+
+### If Actions ever becomes available
+
+The site is a plain static export, so building in CI and publishing
+`.output/public` with `actions/deploy-pages` works with no code change. Recover the
+workflow that did it from git history, switch Pages to **Source: GitHub Actions**, and
+delete `docs/` along with the `deploy` script.
 
 Anything read out of `public/` must go through `asset()` in `app/utils/asset.ts`.
 Nuxt rewrites the asset URLs it owns, but a bare `src="/img/..."` string is

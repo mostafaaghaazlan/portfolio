@@ -13,7 +13,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "assets:optimize": "node scripts/optimize-assets.mjs"
+    "assets:optimize": "node scripts/optimize-assets.mjs",
+    "deploy": "node scripts/build-docs.mjs"
   },
   "dependencies": {
     "gsap": "^3.13.0",
