@@ -1,0 +1,56 @@
+<!--
+  Body of the static fallback that GitHub Pages serves for any URL not
+  prerendered, which in practice means 404s only, since every real route is
+  prerendered.
+
+  Without this the fallback is an empty shell: blank until the bundle boots and
+  renders error.vue, and blank permanently if the bundle fails. So this carries
+  readable content and a working link on its own, styled inline because the app's
+  stylesheet is not part of this template. Once the app hydrates it replaces all
+  of this with the real error page.
+-->
+<div
+  style="
+    min-height: 100dvh;
+    display: grid;
+    align-content: center;
+    gap: 1.75rem;
+    padding: 2.5rem 1.25rem;
+    background: #050505;
+    color: #f5f5f7;
+    font-family: 'Geist', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  "
+>
+  <p
+    style="
+      margin: 0;
+      font-size: 0.6875rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #8b8b95;
+    "
+  >
+    404
+  </p>
+  <h1 style="margin: 0; font-size: clamp(2rem, 6vw, 4rem); font-weight: 600; letter-spacing: -0.035em; line-height: 1">
+    That page is not here.
+  </h1>
+  <p style="margin: 0; max-width: 46ch; font-size: 1.0625rem; line-height: 1.6; color: #9a9aa4">
+    The link may be out of date.
+  </p>
+  <p style="margin: 0">
+    <a
+      href="/"
+      style="
+        display: inline-block;
+        padding: 0.9rem 1.6rem;
+        background: #7c5cff;
+        color: #050505;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        text-decoration: none;
+      "
+      >Back home</a
+    >
+  </p>
+</div>

@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.local
+
+# Nuxt build artefacts. `.output/public` is what the Pages workflow publishes.
+.nuxt/
+.output/
+.nitro/
+.cache/
+.env
+.env.*
+!.env.example
+
+# OS / editor cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# This project standardises on npm; the CI workflow runs `npm ci`.
+# pnpm was run here once and left a partial lockfile behind.
+pnpm-lock.yaml
+pnpm-workspace.yaml
+yarn.lock

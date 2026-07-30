@@ -1,0 +1,394 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Aesthetic family: cinematic dark luxury. This is an aesthetic direction, not
+   an official design system, and it is built from Tailwind v4 utilities plus the
+   custom properties below.
+
+   Locked decisions. Change them here or not at all:
+     Theme     dark only. The brief specifies one theme, so there is no light
+               mode and no inversion. `color-scheme` is pinned so form controls
+               and scrollbars follow.
+     Radius    0 everywhere. `rounded-full` is the single exception and is
+               allowed only on genuinely circular objects (cursor ring, dots).
+     Accent    one violet, used for CTA fills, active markers, focus rings and
+               link underlines. Nothing else gets a colour.
+     Contrast  --fg 19:1, --muted 7:1, --faint 5.8:1 and --accent 4.5:1 against
+               --ink. --faint is the floor: never put body copy below it. Note the
+               real background is --ink plus the WebGL glow, so these are the best
+               case; the glow is deliberately kept weak enough that --faint still
+               clears 4.5:1 at its brightest.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  --color-ink: #050505;
+  --color-surface: #111111;
+  --color-raised: #17171a;
+  --color-fg: #f5f5f7;
+  --color-muted: #9a9aa4;
+  /* 5.8:1 on --ink, and still above 4.5:1 over the brightest part of the WebGL
+     glow, which is the real worst case. Do not darken this. */
+  --color-faint: #8b8b95;
+  --color-accent: #7c5cff;
+  --color-accent-ink: #050505;
+
+  --font-sans: 'Geist', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  /* One easing for everything, so unrelated motion still feels related. */
+  --ease-cine: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --shell: 1440px;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --line: rgb(255 255 255 / 0.09);
+    --line-strong: rgb(255 255 255 / 0.18);
+  }
+
+  html {
+    /* Lenis drives the scroll. Native smooth-scroll would fight it. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* Hairlines carry the grouping so cards are not needed. */
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  img,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal gating.
+
+   Every scroll-revealed element starts at its final, visible state in plain
+   CSS. A client plugin adds `.motion-ready` to <html> before first paint, and
+   only then are the pre-animation states applied. So if JS never runs, or the
+   visitor asked for reduced motion, the page renders complete instead of
+   invisible.
+   --------------------------------------------------------------------------- */
+
+/*
+ * Every pre-animation state on the site goes through `data-reveal`. Nothing may
+ * set `opacity: 0` in a component stylesheet instead, however convenient: a
+ * component rule is not gated on `.motion-ready`, so if the JS bundle fails to
+ * execute while motion is allowed, that content is invisible with no way back.
+ * Routing it through here means the hidden state only ever exists when the script
+ * that reveals it is known to be running.
+ *
+ * Variants:
+ *   fade     opacity only, for elements that must not move
+ *   up       opacity and a rise
+ *   up-blur  opacity, a rise, and a defocus
+ */
+.motion-ready [data-reveal] {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.motion-ready [data-reveal='up'],
+.motion-ready [data-reveal='up-blur'] {
+  transform: translate3d(0, 2.5rem, 0);
+}
+
+.motion-ready [data-reveal='up-blur'] {
+  filter: blur(10px);
+}
+
+/*
+ * Preloader visibility gate.
+ *
+ * This rule lives here, not in the component, for one hard reason: a selector
+ * keyed on a class on <html> is not a scoped selector, and Vue's `:global()`
+ * silently drops the descendant part when a descendant follows it. Written as
+ * `:global(html.motion-ready) .preloader` it compiled to plain
+ * `html.motion-ready`, which applied `position: fixed; display: grid` to the root
+ * element, made <body> a shrink-to-fit grid item and collapsed every layout on
+ * the site. Keep html-keyed rules global and attribute-based.
+ *
+ * The panel stays hidden unless the inline head script confirmed JS is running and
+ * reduced motion is off, so it can never strand a visitor behind a black screen.
+ */
+[data-preloader] {
+  display: none;
+}
+
+html.motion-ready [data-preloader] {
+  display: grid;
+}
+
+/* SplitType writes these. Masked so glyphs slide out of a hard edge. */
+.line {
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.motion-ready .line > .word,
+.motion-ready .line > .char {
+  display: inline-block;
+  transform: translate3d(0, 110%, 0);
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities used often enough to earn a name.
+   --------------------------------------------------------------------------- */
+
+@utility shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @variant md {
+    padding-inline: 2.5rem;
+  }
+  @variant xl {
+    padding-inline: 4rem;
+  }
+}
+
+/* The one small-caps label style. Rationed: see the eyebrow budget in
+   components/README rules. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+@utility hairline {
+  border-top: 1px solid var(--line);
+}
+
+/* Display type.
+   The hero scale is derived, not picked. The headline is 46 characters. Across a
+   full 1312px shell at 6vw the line capacity is about 29 characters, so it breaks
+   naturally onto exactly two lines from 768px up. Raising the ceiling past
+   5.4rem pushes it to three. */
+@utility display-xl {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+  font-size: clamp(1.9rem, 6vw, 5.4rem);
+}
+
+/* The footer statement is four words, so it can take a far bigger scale than the
+   hero without wrapping past two lines. */
+@utility display-hero {
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  font-size: clamp(2.5rem, 10.5vw, 9.5rem);
+}
+
+@utility display-lg {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  font-size: clamp(2.25rem, 5.6vw, 5rem);
+}
+
+@utility display-md {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  font-size: clamp(1.75rem, 3.4vw, 3rem);
+}
+
+/* ---------------------------------------------------------------------------
+   Shared component styles: the button and the brand mark.
+
+   These two live here rather than in a <style scoped> block for a measured
+   reason. Both components are used across the layout, both pages and the error
+   page, so Nuxt emits their styles as shared chunks and does not inline them the
+   way it inlines single-page component styles. That left two render-blocking
+   stylesheet requests of well under a kilobyte each, which Lighthouse measured at
+   458ms of delayed first paint between them: almost entirely round trip latency,
+   not bytes.
+
+   Moving them into the global sheet, which is inlined into the prerendered HTML,
+   removes both requests. The cost is losing scoped encapsulation for these two,
+   which is acceptable because every selector is already namespaced (.btn__*,
+   .mark--*) and cannot collide.
+   --------------------------------------------------------------------------- */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Radius 0, per the shape lock. */
+  border-radius: 0;
+  padding: 1rem 1.85rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.4s var(--ease-cine),
+    border-color 0.4s var(--ease-cine),
+    color 0.4s var(--ease-cine);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  will-change: transform;
+}
+
+.btn--solid {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border: 1px solid var(--color-accent);
+}
+.btn--solid:hover:not(:disabled) {
+  /* Lightened rather than darkened, so contrast against the dark ink improves on
+     hover instead of degrading. */
+  background: color-mix(in oklab, var(--color-accent) 82%, white);
+  border-color: color-mix(in oklab, var(--color-accent) 82%, white);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--line-strong);
+}
+.btn--ghost:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: rgb(124 92 255 / 0.08);
+}
+
+/* Physical push. Both variants, so a tap always acknowledges. */
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  border: 1px solid var(--line);
+}
+
+.mark img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+/* Launcher icons already carry their own opaque background, so they fill the tile
+   instead of floating inset on a plate they do not need. `cover` rather than
+   `contain`, because these are square artwork and letterboxing them would show a
+   plate colour behind a mark that already has one. */
+.mark--image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Marks with dark or mid tone ink need something to sit on. Near white rather
+   than pure white, so it belongs to the palette instead of punching a hole in it. */
+.mark--light {
+  background: #ededf0;
+  border-color: transparent;
+}
+
+/* Marks drawn in white keep the page's own surface. */
+.mark--dark {
+  background: rgb(255 255 255 / 0.05);
+}
+
+.mark--mono {
+  background: rgb(255 255 255 / 0.04);
+}
+
+/* No background of its own to set: the artwork is the background. */
+.mark--image {
+  background: var(--color-surface);
+}
+
+.mark__text {
+  font-family: var(--font-mono);
+  font-size: calc(var(--mark-size) * 0.24);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion.
+
+   Everything above MOTION_INTENSITY 3 collapses. Lenis, the WebGL field, the
+   cursor follower and the marquee all check the same media query in JS; this
+   block is the CSS half of the same contract.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-ready [data-reveal],
+  .motion-ready .line > .word,
+  .motion-ready .line > .char {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

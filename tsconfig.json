@@ -1,0 +1,11 @@
+{
+  // Nuxt generates one config per environment under .nuxt and this file just
+  // points an editor at all of them. `npm run typecheck` uses the same set.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}

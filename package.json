@@ -1,0 +1,38 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Portfolio site for Mostafa Ghazlan",
+  "packageManager": "npm@11.12.1",
+  "scripts": {
+    "preinstall": "node scripts/check-package-manager.mjs",
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate && node scripts/trim-prefetch.mjs",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "assets:optimize": "node scripts/optimize-assets.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.11",
+    "nuxt": "^4.2.2",
+    "split-type": "^0.3.4",
+    "three": "^0.182.0",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "^1.2.2",
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxt/icon": "^2.1.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^24.10.1",
+    "@types/three": "^0.182.0",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.1.1"
+  }
+}
